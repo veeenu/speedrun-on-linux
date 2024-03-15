@@ -1,9 +1,7 @@
-use std::{
-    collections::BTreeMap,
-    env::{self, VarError},
-    fs,
-    path::PathBuf,
-};
+use std::collections::BTreeMap;
+use std::env::{self, VarError};
+use std::fs;
+use std::path::PathBuf;
 
 use anyhow::{anyhow, bail, Context};
 use serde::{de, Deserialize, Deserializer};

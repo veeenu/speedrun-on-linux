@@ -1,12 +1,12 @@
-use std::{env, io::Cursor, process::Command};
+use std::env;
+use std::io::Cursor;
+use std::process::Command;
 
 use anyhow::{Context, Result};
 use zip::ZipArchive;
 
-use crate::{
-    config::Config,
-    util::{self, find_running_steam_appid},
-};
+use crate::config::Config;
+use crate::util::{self, find_running_steam_appid};
 
 // TODO make dynamic
 const LIVESPLIT_DOWNLOAD: &str =

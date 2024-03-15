@@ -1,8 +1,9 @@
-use speedrun_on_linux::{config::load_config, livesplit::LiveSplit};
-
 use anyhow::{anyhow, Context, Result};
 use console::Term;
-use dialoguer::{theme::ColorfulTheme, Select};
+use dialoguer::theme::ColorfulTheme;
+use dialoguer::Select;
+use speedrun_on_linux::config::load_config;
+use speedrun_on_linux::livesplit::LiveSplit;
 
 mod flags {
     xflags::xflags! {

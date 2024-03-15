@@ -11,7 +11,13 @@ pub fn download_file(url: &str, msg: &'static str) -> Result<Vec<u8>> {
 
     let total_size = response.content_length().unwrap_or(0);
     let progress = ProgressBar::new(total_size);
-    progress.set_style(ProgressStyle::with_template("{msg}\n[{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({bytes_per_sec}, {eta})").unwrap());
+    progress.set_style(
+        ProgressStyle::with_template(
+            "{msg}\n[{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} \
+             ({bytes_per_sec}, {eta})",
+        )
+        .unwrap(),
+    );
     progress.set_message(msg);
 
     let mut downloaded = 0;
