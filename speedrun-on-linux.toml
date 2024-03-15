@@ -1,0 +1,3 @@
+steam.path = "${XDG_DATA_HOME}/Steam"
+proton.path = "${XDG_DATA_HOME}/Steam/steamapps/common/Proton 8.0"
+livesplit.path = "${XDG_DATA_HOME}/LiveSplit"
