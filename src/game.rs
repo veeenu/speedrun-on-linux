@@ -14,7 +14,11 @@ pub struct Game {
 
 impl Game {
     pub fn new(path: PathBuf, env: BTreeMap<String, String>, config: &Config) -> Self {
-        let proton_path = config.proton.path.join("dist/bin/wine64");
+        let proton_files_path = ["dist", "files"]
+            .iter()
+            .find(|d| config.proton.path.join(d).exists())
+            .expect("Couldn't find proton wine directory");
+        let proton_path = config.proton.path.join(proton_files_path).join("bin/wine64");
 
         Self { path, env, proton_path }
     }
