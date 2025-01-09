@@ -3,31 +3,19 @@ proton.path = "${XDG_DATA_HOME}/Steam/steamapps/common/Proton 8.0"
 livesplit.path = "${XDG_DATA_HOME}/LiveSplit"
 
 # Common environment variables.
-[games.common.env]
-GST_PLUGIN_SYSTEM_PATH_1_0="${PROTON_PATH}/dist/lib64/gstreamer-1.0:${PROTON_PATH}/dist/lib/gstreamer-1.0" 
-LD_LIBRARY_PATH="${STEAM_PATH}/ubuntu12_64/video/:${STEAM_PATH}/ubuntu12_32/video/:${PROTON_PATH}/dist/lib64/:${PROTON_PATH}/dist/lib/:/usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu/aliases:/usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu/aliases" 
-MEDIACONV_AUDIO_DUMP_FILE="${STEAM_PATH}/steamapps/shadercache/${SteamAppId}/fozmediav1/audiov2.foz" 
-MEDIACONV_AUDIO_TRANSCODED_FILE="${STEAM_PATH}/steamapps/shadercache/${SteamAppId}/transcoded_audio.foz" 
-MEDIACONV_VIDEO_DUMP_FILE="${STEAM_PATH}/steamapps/shadercache/${SteamAppId}/fozmediav1/video.foz" 
-MEDIACONV_VIDEO_TRANSCODED_FILE="${STEAM_PATH}/steamapps/shadercache/${SteamAppId}/transcoded_video.foz" 
-STEAM_COMPAT_CLIENT_INSTALL_PATH="${STEAM_PATH}" 
-TERM="xterm"
-WINEDEBUG="-all"
-WINEDLLOVERRIDES="steam.exe=b;dotnetfx35.exe=b;dotnetfx35setup.exe=b;beclient.dll=b,n;beclient_x64.dll=b,n;d3d11=n;d3d10core=n;d3d9=n;dxgi=n;d3d12=n;d3d12core=n;dinput8=n,b" 
-WINEDLLPATH="${PROTON_PATH}/dist/lib64/wine:${PROTON_PATH}/dist/lib/wine" 
-WINEESYNC="1" 
-WINEFSYNC="1" 
-WINEPREFIX="${STEAM_PATH}/steamapps/compatdata/${SteamAppId}/pfx/" 
-WINE_GST_REGISTRY_DIR="${STEAM_PATH}/steamapps/compatdata/${SteamAppId}/gstreamer-1.0/" 
-WINE_LARGE_ADDRESS_AWARE="1" 
+[envs.common]
 
 # Dark Souls III specific environment variables.
-[games."DarkSoulsIII".env]
-SteamAppId="374320" 
-SteamGameId="374320" 
+[envs."DarkSoulsIII"]
+WINEDLLOVERRIDES="dinput8=n,b"
+DOLL_SKIP="consistent"
 
-[games."DarkSoulsIII".env-deps]
+[envs."DarkSoulsIII".deps]
 after = ["common"]
+
+# Dark Souls III specific settings.
+[games."DarkSoulsIII"]
+app_id = "374320"
 
 # These paths should be changed manually.
 [games."DarkSoulsIII".paths]
@@ -35,18 +23,3 @@ after = ["common"]
 "1.08" = "/mnt/Patches/DARK SOULS III/1.08/Game/DarkSoulsIII.exe"
 "1.12" = "/mnt/Patches/DARK SOULS III/1.12/Game/DarkSoulsIII.exe"
 "1.15.1" = "/mnt/Patches/DARK SOULS III/1.15.1/Game/DarkSoulsIII.exe"
-
-# Elden Ring specific environment variables.
-[games."EldenRing".env]
-SteamAppId="1245620" 
-SteamGameId="1245620" 
-
-[games."EldenRing".env-deps]
-after = ["common"]
-
-# These paths should be changed manually.
-[games."EldenRing".paths]
-"1.02.0" = "/mnt/Patches/Elden Ring/1.02.0/Game/eldenring.exe"
-"1.02.1" = "/mnt/Patches/Elden Ring/1.02.1/Game/eldenring.exe"
-"1.02.2" = "/mnt/Patches/Elden Ring/1.02.2/Game/eldenring.exe"
-"1.02.3" = "/mnt/Patches/Elden Ring/1.02.3/Game/eldenring.exe"

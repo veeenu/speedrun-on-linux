@@ -1,24 +1,26 @@
 use anyhow::{anyhow, Context, Result};
+use clap::{Parser, Subcommand};
 use console::Term;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Select;
 use speedrun_on_linux::config::load_config;
 use speedrun_on_linux::livesplit::LiveSplit;
 
-mod flags {
-    xflags::xflags! {
-        cmd app {
-            /// Run LiveSplit.
-            cmd livesplit { }
-            /// Run game
-            cmd game {
-                /// Specify game name.
-                required name: String
-                /// Specify game version.
-                optional version: String
-            }
-        }
-    }
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Run LiveSplit.
+    Livesplit,
+    /// Run game.
+    Game { name: String, version: Option<String> },
+    /// List games.
+    List,
 }
 
 fn select_version<'a>(choices: &'a [&'a String]) -> Result<String> {
@@ -37,27 +39,28 @@ fn select_version<'a>(choices: &'a [&'a String]) -> Result<String> {
 fn main() -> Result<()> {
     let config = load_config()?;
 
-    let flags = flags::App::from_env_or_exit();
+    let command = Args::parse();
 
-    match flags.subcommand {
-        flags::AppCmd::Livesplit(_) => {
+    match command.command {
+        Commands::Livesplit => {
             LiveSplit::new(&config)
                 .context("Couldn't install LiveSplit")?
                 .run()
                 .context("Couldn't run LiveSplit")?;
         },
-        flags::AppCmd::Game(g) => {
-            let version = match g.version {
+        Commands::Game { name, version } => {
+            let version = match version {
                 Some(v) => v.to_string(),
                 None => config
-                    .games
-                    .versions(&g.name)
-                    .ok_or_else(|| anyhow!("Couldn't find game: {}", g.name))
+                    .versions(&name)
+                    .ok_or_else(|| anyhow!("Couldn't find game: {}", name))
                     .and_then(|versions| select_version(&versions))?,
             };
-            let game =
-                config.games.get(&g.name, &version, &config).context("Couldn't setup game")?;
+            let game = config.get_game(&name, &version, &config).context("Couldn't setup game")?;
             game.run().context("Couldn't run game")?;
+        },
+        Commands::List => {
+            config.games.0.keys().for_each(|g| println!("{}", g));
         },
     }
 
