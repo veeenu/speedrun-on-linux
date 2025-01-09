@@ -16,7 +16,45 @@ pub struct Config {
     pub proton: Proton,
     pub livesplit: LiveSplit,
     #[serde(default)]
-    pub games: GameEnvironments,
+    pub games: GameConfigs,
+    #[serde(default)]
+    pub envs: GameEnvironments,
+}
+
+impl Config {
+    pub fn versions(&self, name: &str) -> Option<Vec<&String>> {
+        self.games.0.get(name).map(|g| g.paths.keys().collect())
+    }
+
+    pub fn get_game(&self, name: &str, version: &str, config: &Config) -> anyhow::Result<Game> {
+        let mut env = BTreeMap::new();
+
+        self.envs.traverse(&mut env, name, config)?;
+
+        let Some(game) = self.games.0.get(name) else {
+            bail!("Couldn't find game: {name}");
+        };
+
+        let Some(path) = game.paths.get(version).map(|p| p.to_path_buf()) else {
+            bail!("Couldn't find path to version {version} for game {name}");
+        };
+
+        let _ = env.entry("STEAM_COMPAT_DATA_PATH".to_string()).or_insert_with(|| {
+            config
+                .steam
+                .path
+                .join("steamapps/compatdata")
+                .join(&game.app_id)
+                .to_string_lossy()
+                .to_string()
+        });
+
+        let _ = env
+            .entry("STEAM_COMPAT_CLIENT_INSTALL_PATH".to_string())
+            .or_insert_with(|| config.proton.path.to_string_lossy().to_string());
+
+        Ok(Game::new(path, env, config))
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -37,28 +75,20 @@ pub struct LiveSplit {
     pub path: PathBuf,
 }
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct GameConfig {
+    pub app_id: String,
+    #[serde(default)]
+    pub paths: BTreeMap<String, PathBuf>,
+}
+
+#[derive(Default, Deserialize, Debug, Clone)]
+pub struct GameConfigs(pub BTreeMap<String, GameConfig>);
+
 #[derive(Default, Deserialize, Debug, Clone)]
 pub struct GameEnvironments(BTreeMap<String, GameEnvironment>);
 
 impl GameEnvironments {
-    pub fn get(&self, name: &str, version: &str, config: &Config) -> anyhow::Result<Game> {
-        let mut env = BTreeMap::new();
-
-        self.traverse(&mut env, name, config)?;
-
-        let Some(path) =
-            self.0.get(name).and_then(|g| g.paths.get(version).map(|p| p.to_path_buf()))
-        else {
-            bail!("Couldn't find path to version {version} for game {name}");
-        };
-
-        Ok(Game::new(path, env, config))
-    }
-
-    pub fn versions(&self, name: &str) -> Option<Vec<&String>> {
-        self.0.get(name).map(|g| g.paths.keys().collect())
-    }
-
     fn traverse(
         &self,
         env: &mut BTreeMap<String, String>,
@@ -68,13 +98,13 @@ impl GameEnvironments {
         let current =
             self.0.get(current).ok_or_else(|| anyhow!("{current}: environment not found"))?;
 
-        for node in &current.env_deps.before {
+        for node in &current.deps.before {
             self.traverse(env, node, config)?;
         }
 
         current.apply(env, config)?;
 
-        for node in &current.env_deps.after {
+        for node in &current.deps.after {
             self.traverse(env, node, config)?;
         }
 
@@ -84,11 +114,10 @@ impl GameEnvironments {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct GameEnvironment {
-    #[serde(default, rename = "env-deps")]
-    pub env_deps: EnvironmentDependencies,
-    pub env: BTreeMap<String, String>,
     #[serde(default)]
-    pub paths: BTreeMap<String, PathBuf>,
+    pub deps: EnvironmentDependencies,
+    #[serde(flatten)]
+    pub env: BTreeMap<String, String>,
 }
 
 impl GameEnvironment {
@@ -142,7 +171,7 @@ fn get_env(name: &str) -> Result<Option<String>, VarError> {
 fn shell_expand<'de, D: Deserializer<'de>>(deserializer: D) -> Result<PathBuf, D::Error> {
     struct ShellExpandVisitor;
 
-    impl<'de> de::Visitor<'de> for ShellExpandVisitor {
+    impl de::Visitor<'_> for ShellExpandVisitor {
         type Value = PathBuf;
 
         fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -204,6 +233,7 @@ impl TestConfig {
             proton: Proton { path: temp_dir.path().join("Steam/steamapps/common/Proton 8.0") },
             livesplit: LiveSplit { path: temp_dir.path().join("LiveSplit") },
             games: Default::default(),
+            envs: Default::default(),
         };
 
         Self { config, temp_dir }
@@ -225,6 +255,6 @@ mod tests {
     fn test_load_config() {
         let cfg = load_config().expect("Couldn't load config");
 
-        cfg.games.get("DarkSoulsIII", "1.08", &cfg).expect("No env");
+        cfg.get_game("DarkSoulsIII", "1.08", &cfg).expect("No env");
     }
 }

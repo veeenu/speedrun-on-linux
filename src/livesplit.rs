@@ -70,7 +70,7 @@ fn download_soulsplitter(config: &Config) -> Result<()> {
     let bytes = util::download_file(SOULSPLITTER_DOWNLOAD, "Downloading SoulSplitter...")?;
     ZipArchive::new(Cursor::new(bytes))
         .context("Couldn't open archive")?
-        .extract(&config.livesplit.path.join("Components"))
+        .extract(config.livesplit.path.join("Components"))
         .context("Couldn't extract archive")?;
 
     Ok(())
