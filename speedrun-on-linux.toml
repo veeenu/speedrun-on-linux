@@ -4,10 +4,10 @@ livesplit.path = "${XDG_DATA_HOME}/LiveSplit"
 
 # Common environment variables.
 [envs.common]
+WINEDLLOVERRIDES="dinput8=n,b"
 
 # Dark Souls III specific environment variables.
 [envs."DarkSoulsIII"]
-WINEDLLOVERRIDES="dinput8=n,b"
 DOLL_SKIP="consistent"
 
 [envs."DarkSoulsIII".deps]
@@ -16,6 +16,7 @@ after = ["common"]
 # Dark Souls III specific settings.
 [games."DarkSoulsIII"]
 app_id = "374320"
+env = "DarkSoulsIII"
 
 # These paths should be changed manually.
 [games."DarkSoulsIII".paths]
