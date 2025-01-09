@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::{anyhow, Context, Result};
 use clap::{Parser, Subcommand};
 use console::Term;
@@ -9,6 +11,9 @@ use speedrun_on_linux::livesplit::LiveSplit;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
+    /// Path to config file.
+    #[arg(short, long)]
+    config: Option<PathBuf>,
     #[command(subcommand)]
     command: Commands,
 }
@@ -37,9 +42,8 @@ fn select_version<'a>(choices: &'a [&'a String]) -> Result<String> {
 }
 
 fn main() -> Result<()> {
-    let config = load_config()?;
-
     let command = Args::parse();
+    let config = load_config(command.config)?;
 
     match command.command {
         Commands::Livesplit => {

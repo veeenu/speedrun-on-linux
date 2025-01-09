@@ -29,11 +29,13 @@ impl Config {
     pub fn get_game(&self, name: &str, version: &str, config: &Config) -> anyhow::Result<Game> {
         let mut env = BTreeMap::new();
 
-        self.envs.traverse(&mut env, name, config)?;
-
         let Some(game) = self.games.0.get(name) else {
             bail!("Couldn't find game: {name}");
         };
+
+        let env_name = game.env.as_deref().unwrap_or(name);
+
+        self.envs.traverse(&mut env, env_name, config)?;
 
         let Some(path) = game.paths.get(version).map(|p| p.to_path_buf()) else {
             bail!("Couldn't find path to version {version} for game {name}");
@@ -78,6 +80,7 @@ pub struct LiveSplit {
 #[derive(Deserialize, Debug, Clone)]
 pub struct GameConfig {
     pub app_id: String,
+    pub env: Option<String>,
     #[serde(default)]
     pub paths: BTreeMap<String, PathBuf>,
 }
@@ -201,8 +204,8 @@ fn config_path() -> Option<PathBuf> {
     .find(|p| p.exists())
 }
 
-pub fn load_config() -> anyhow::Result<Config> {
-    let config_path = match config_path() {
+pub fn load_config(path: Option<PathBuf>) -> anyhow::Result<Config> {
+    let config_path = match path.or_else(config_path) {
         Some(config_path) => config_path,
         None => {
             let config_path = dirs::config_dir()
