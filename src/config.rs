@@ -37,8 +37,12 @@ impl Config {
 
         self.envs.traverse(&mut env, env_name, config)?;
 
-        let Some(path) = game.paths.get(version).map(|p| p.to_path_buf()) else {
-            bail!("Couldn't find path to version {version} for game {name}");
+        let argv = match game.paths.get(version) {
+            Some(GamePath::One(p)) => vec![p.clone()],
+            Some(GamePath::Many(v)) if !v.is_empty() => v.clone(),
+            Some(GamePath::Many(_)) | None => {
+                bail!("Couldn't find path to version {version} for game {name}")
+            },
         };
 
         let _ = env.entry("STEAM_COMPAT_DATA_PATH".to_string()).or_insert_with(|| {
@@ -55,7 +59,7 @@ impl Config {
             .entry("STEAM_COMPAT_CLIENT_INSTALL_PATH".to_string())
             .or_insert_with(|| config.proton.path.to_string_lossy().to_string());
 
-        Ok(Game::new(path, env, config))
+        Ok(Game::new(argv, env, config))
     }
 }
 
@@ -78,11 +82,18 @@ pub struct LiveSplit {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+#[serde(untagged)]
+pub enum GamePath {
+    One(String),
+    Many(Vec<String>),
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct GameConfig {
     pub app_id: String,
     pub env: Option<String>,
     #[serde(default)]
-    pub paths: BTreeMap<String, PathBuf>,
+    pub paths: BTreeMap<String, GamePath>,
 }
 
 #[derive(Default, Deserialize, Debug, Clone)]
