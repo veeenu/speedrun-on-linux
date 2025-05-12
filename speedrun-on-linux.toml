@@ -17,9 +17,11 @@ after = ["common"]
 [games."DarkSoulsIII"]
 app_id = "374320"
 env = "DarkSoulsIII"
+gamescope = true
 
 # These paths should be changed manually.
 [games."DarkSoulsIII".paths]
+"aaa" = "/home/andrea/Games/Patches/DARK SOULS III 1.04/Game/DarkSoulsIII.exe"
 "1.04" = "/mnt/Patches/DARK SOULS III/1.04/Game/DarkSoulsIII.exe"
 "1.08" = "/mnt/Patches/DARK SOULS III/1.08/Game/DarkSoulsIII.exe"
 "1.12" = "/mnt/Patches/DARK SOULS III/1.12/Game/DarkSoulsIII.exe"

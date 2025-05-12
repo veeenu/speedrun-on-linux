@@ -44,7 +44,7 @@ pub fn find_running_steam_appid() -> Result<u64> {
     let sys = System::new_all();
 
     let Some((_, process)) = sys.processes().iter().find(|(_, process)| {
-        process.cmd().first().map(|s| s.ends_with("steam.exe")).unwrap_or(false)
+        process.cmd().first().map(|s| s.to_lowercase().ends_with("steam.exe")).unwrap_or(false)
     }) else {
         bail!("Couldn't find a steam process running. Start a game first.");
     };

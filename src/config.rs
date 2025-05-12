@@ -59,7 +59,7 @@ impl Config {
             .entry("STEAM_COMPAT_CLIENT_INSTALL_PATH".to_string())
             .or_insert_with(|| config.proton.path.to_string_lossy().to_string());
 
-        Ok(Game::new(argv, env, config))
+        Ok(Game::new(argv, env, config, game))
     }
 }
 
@@ -92,6 +92,8 @@ pub enum GamePath {
 pub struct GameConfig {
     pub app_id: String,
     pub env: Option<String>,
+    #[serde(default)]
+    pub gamescope: bool,
     #[serde(default)]
     pub paths: BTreeMap<String, GamePath>,
 }
@@ -267,7 +269,7 @@ mod tests {
 
     #[test]
     fn test_load_config() {
-        let cfg = load_config().expect("Couldn't load config");
+        let cfg = load_config(Some("speedrun-on-linux.toml".into())).expect("Couldn't load config");
 
         cfg.get_game("DarkSoulsIII", "1.08", &cfg).expect("No env");
     }

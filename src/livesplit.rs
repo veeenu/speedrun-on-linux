@@ -49,6 +49,7 @@ impl LiveSplit {
                 format!("{:?}:{}", self.config.proton.path, env::var("PATH").unwrap_or_default()),
             )
             .env("APPID", &steam_appid)
+            .env("OBS_VKCAPTURE", "1")
             .spawn()
             .context("Couldn't run LiveSplit")?;
 
